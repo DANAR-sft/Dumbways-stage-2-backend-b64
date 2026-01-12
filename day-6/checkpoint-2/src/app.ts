@@ -18,7 +18,7 @@ app.use(cookieParser());
 // Session configuration (optional - for additional session features)
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "your-secret-key-change-this",
+    secret: process.env.SESSION_SECRET || "yEmangEA",
     resave: false,
     saveUninitialized: false,
     cookie: {
