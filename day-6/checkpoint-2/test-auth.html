@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Session-Based Login</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      .container {
+        background: #f4f4f4;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+      }
+      .form-group {
+        margin: 15px 0;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input[type="text"],
+      input[type="password"],
+      input[type="email"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .logout {
+        background: #dc3545;
+      }
+      .logout:hover {
+        background: #c82333;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .info {
+        background: #d1ecf1;
+        color: #0c5460;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔐 Test Session-Based Authentication</h1>
+
+    <div class="container">
+      <h2>1. Registration</h2>
+      <form id="registerForm">
+        <div class="form-group">
+          <label>Email:</label>
+          <input type="email" name="email" required />
+        </div>
+        <div class="form-group">
+          <label>Username:</label>
+          <input type="text" name="username" required />
+        </div>
+        <div class="form-group">
+          <label>Password:</label>
+          <input type="password" name="password" required />
+        </div>
+        <div class="form-group">
+          <label>Nama:</label>
+          <input type="text" name="name" required />
+        </div>
+        <div class="form-group">
+          <label>Telepon:</label>
+          <input type="text" name="phone" />
+        </div>
+        <div class="form-group">
+          <label>Alamat:</label>
+          <input type="text" name="address" />
+        </div>
+        <button type="submit">Register</button>
+      </form>
+    </div>
+
+    <div class="container">
+      <h2>2. Login</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Username/Email:</label>
+          <input type="text" name="username" value="testsupplier" required />
+        </div>
+        <div class="form-group">
+          <label>Password:</label>
+          <input type="password" name="password" value="password123" required />
+        </div>
+        <button type="submit">Login</button>
+      </form>
+    </div>
+
+    <div class="container">
+      <h2>3. Session Actions</h2>
+      <button onclick="checkSession()">Check Session Status</button>
+      <button onclick="getProfile()">Get Profile</button>
+      <button onclick="logout()" class="logout">Logout</button>
+    </div>
+
+    <div class="container">
+      <h2>4. Response</h2>
+      <div id="response"></div>
+    </div>
+
+    <script>
+      const API_BASE = "http://localhost:3000/api";
+      const responseDiv = document.getElementById("response");
+
+      function showResponse(data, type = "info") {
+        const html = `
+                <div class="${type}">
+                    <strong>Response:</strong><br>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                </div>
+            `;
+        responseDiv.innerHTML = html;
+      }
+
+      function showError(message) {
+        showResponse({ error: message }, "error");
+      }
+
+      function showSuccess(data) {
+        showResponse(data, "success");
+      }
+
+      // Registration
+      document
+        .getElementById("registerForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          const data = Object.fromEntries(formData.entries());
+
+          try {
+            const response = await fetch(`${API_BASE}/auth/register`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include", // Important for cookies
+              body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+              showSuccess(result);
+            } else {
+              showError(result.error || "Registration failed");
+            }
+          } catch (error) {
+            showError("Network error: " + error.message);
+          }
+        });
+
+      // Login
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          const data = Object.fromEntries(formData.entries());
+
+          try {
+            const response = await fetch(`${API_BASE}/auth/login`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include", // Important for cookies
+              body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+              showSuccess(result);
+            } else {
+              showError(result.error || "Login failed");
+            }
+          } catch (error) {
+            showError("Network error: " + error.message);
+          }
+        });
+
+      // Check session status
+      async function checkSession() {
+        try {
+          const response = await fetch(`${API_BASE}/auth/check`, {
+            credentials: "include",
+          });
+          const result = await response.json();
+          showResponse(result);
+        } catch (error) {
+          showError("Network error: " + error.message);
+        }
+      }
+
+      // Get profile
+      async function getProfile() {
+        try {
+          const response = await fetch(`${API_BASE}/auth/profile`, {
+            credentials: "include", // Important for cookies
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            showSuccess(result);
+          } else {
+            showError(result.error || "Failed to get profile");
+          }
+        } catch (error) {
+          showError("Network error: " + error.message);
+        }
+      }
+
+      // Logout
+      async function logout() {
+        try {
+          const response = await fetch(`${API_BASE}/auth/logout`, {
+            method: "POST",
+            credentials: "include", // Important for cookies
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            showSuccess(result);
+          } else {
+            showError(result.error || "Logout failed");
+          }
+        } catch (error) {
+          showError("Network error: " + error.message);
+        }
+      }
+
+      // Check initial session status
+      checkSession();
+    </script>
+  </body>
+</html>
